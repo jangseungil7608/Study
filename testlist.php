@@ -11,7 +11,6 @@
 	require_once('mySqlObj.php');
 	//mysqlObjのインスタンス生成
 	$mySqlObj = new mySqlObj();
-	//var_dump($mySqlObj);
 	//初期ページ以外の場合
 	if (!empty($_GET['page'])){
 		$now_page = htmlspecialchars($_GET['page']);
