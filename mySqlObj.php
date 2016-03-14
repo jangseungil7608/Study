@@ -99,12 +99,14 @@ class mySqlObj {
 			$stmt->bind_param('sss', $name, $mailaddress, $comment);
 			//実行
 			$stmt->execute();
+			//追加履歴を表示する
+			$this->createHistory();
 			//コミットをする
 			$this->mysqli->commit();
-			$this->createHistory();
 		} catch(Exception $e) {
 			//ロールバックする
 			$this->mysqli->rollback();
+			echo "追加に失敗しました";
 			throw $e;
 		}
 		// DBを閉じる
@@ -123,13 +125,14 @@ class mySqlObj {
 			$stmt->bind_param('si', $message, $id);
 			//実行
 			$stmt->execute();
+			//変更履歴を表示する
+			$this->changeHistory($id);
 			//コミットをする
 			$this->mysqli->commit();
-			$this->changeHistory($id);
 		} catch(Exception $e) {
-			echo "Exception";
 			//ロールバックする
 			$this->mysqli->rollback();
+			echo "更新に失敗しました";
 			throw $e;
 		}
 		// DBを閉じる
@@ -156,6 +159,7 @@ class mySqlObj {
 			//ロールバックする
 			$this->mysqli->rollback();
 			print("削除に失敗しました<br>");
+			throw $e;
 		}
 		// DBを閉じる
 		$stmt->close();
