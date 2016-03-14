@@ -22,7 +22,6 @@ class mySqlObj {
 				return $cnt;
 			}
 		}
-		var_dump($cnt);
 		// DBを閉じる
 		$this->mysqli->close();
 	}
@@ -51,8 +50,6 @@ class mySqlObj {
 	}
 
 	public function selectBulletinBoardNext($now_page,$max_page) {
-		//接続を呼ぶ
-		//$this->dbConn();
 		//userinfoテーブルから登録日付の降順でデータを取得
 		$offset = ($now_page * 10) - 10;
 		$result = $this->mysqli->query("SELECT * FROM userinfo ORDER BY created LIMIT 10 OFFSET ".$offset);
@@ -91,48 +88,49 @@ class mySqlObj {
 	}
 
 	public function insertUserInfo($name, $mailaddress, $comment) {
-		//オートコミットをOFF
-		$stmt = $this->mysqli->autocommit(false);
-		//プリペアドステートメントを作成　ユーザ入力を使用する箇所は?にしておく
-		$stmt = $this->mysqli->prepare("INSERT INTO userinfo (name, address, message) VALUES (?, ?, ?)");
-		//$_POST["name"]に名前が、$_POST["message"]にアドレスが、$_POST["message"]に本文が格納されているとする。
-		//?の位置に値を割り当てる
-		$stmt->bind_param('sss', $name, $mailaddress, $comment);
-		//実行
-		$result = $stmt->execute();
-		//更新が成功した場合のみコミット
-		if($result) {
+		try{
+			//オートコミットをOFF
+			$stmt = $this->mysqli->autocommit(false);
+			//トランザクション開始
+			$stmt = $this->mysqli->begin_transaction();
+			//プリペアドステートメントを作成　ユーザ入力を使用する箇所は?にしておく
+			$stmt = $this->mysqli->prepare("INSERT INTO userinfo (name, address, message) VALUES (?, ?, ?)");
+			//?の位置に値を割り当てる
+			$stmt->bind_param('sss', $name, $mailaddress, $comment);
+			//実行
+			$stmt->execute();
 			//コミットをする
 			$this->mysqli->commit();
 			$this->createHistory();
-		} else {
+		} catch(Exception $e) {
 			//ロールバックする
 			$this->mysqli->rollback();
+			throw $e;
 		}
 		// DBを閉じる
 		$stmt->close();
 	}
 
 	public function updateMessage($message,$id) {
-		//var_dump($this->mysqli);
-		//オートコミットをOFF
-		$stmt = $this->mysqli->autocommit(false);
-		//トランザクション開始
-		//$stmt = $this->mysqli->beginTransaction();
-		//プリペアドステートメントを作成　ユーザ入力を使用する箇所は?にしておく
-		$stmt = $this->mysqli->prepare("UPDATE userinfo set message = ? where id = ?");
-		//?の位置に値を割り当てる
-		$stmt->bind_param('si', $message, $id);
-		//実行
-		$result = $stmt->execute();
-		//更新が成功した場合のみコミット
-		if($result) {
+		try{
+			//オートコミットをOFF
+			$stmt = $this->mysqli->autocommit(false);
+			//トランザクション開始
+			$stmt = $this->mysqli->begin_transaction();
+			//プリペアドステートメントを作成　ユーザ入力を使用する箇所は?にしておく
+			$stmt = $this->mysqli->prepare("UPDATE userinfo set message = ? where id = ?");
+			//?の位置に値を割り当てる
+			$stmt->bind_param('si', $message, $id);
+			//実行
+			$stmt->execute();
 			//コミットをする
 			$this->mysqli->commit();
 			$this->changeHistory($id);
-		} else {
+		} catch(Exception $e) {
+			var_dump($e);
 			//ロールバックする
 			$this->mysqli->rollback();
+			throw $e;
 		}
 		// DBを閉じる
 		$stmt->close();
@@ -140,24 +138,21 @@ class mySqlObj {
 	}
 
 	public function deleteUser($id) {
-		//接続を呼ぶ
-		//$this->dbConn();
-		//オートコミットをOFF
-		$stmt = $this->mysqli->autocommit(false);
-		//トランザクション開始
-		//$stmt = $this->mysqli->beginTransaction();
-		//userinfoテーブル内の該当レコードを削除
-		$stmt = $this->mysqli->prepare("DELETE FROM userinfo WHERE id = ?");
-		//?の位置に値を割り当てる
-		$stmt->bind_param('i', $id);
-		//実行
-		$result = $stmt->execute();
-		//削除が成功した場合のみコミット
-		if($result){
+		try{
+			//オートコミットをOFF
+			$stmt = $this->mysqli->autocommit(false);
+			//トランザクション開始
+			$stmt = $this->mysqli->begin_transaction();
+			//userinfoテーブル内の該当レコードを削除
+			$stmt = $this->mysqli->prepare("DELETE FROM userinfo WHERE id = ?");
+			//?の位置に値を割り当てる
+			$stmt->bind_param('i', $id);
+			//実行
+			$stmt->execute();
 			//コミットをする
 			$this->mysqli->commit();
 			print("削除しました<br>");
-		} else {
+		} catch(Exception $e) {
 			//ロールバックする
 			$this->mysqli->rollback();
 			print("削除に失敗しました<br>");
