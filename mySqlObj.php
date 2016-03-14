@@ -127,7 +127,7 @@ class mySqlObj {
 			$this->mysqli->commit();
 			$this->changeHistory($id);
 		} catch(Exception $e) {
-			var_dump($e);
+			echo "Exception";
 			//ロールバックする
 			$this->mysqli->rollback();
 			throw $e;
